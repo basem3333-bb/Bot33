@@ -1,0 +1,1235 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>Break & Retest Pro</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#030b14;color:#c0d8e8;font-family:'Courier New',monospace;direction:rtl;min-height:100vh;padding:8px;display:flex;flex-direction:column;align-items:center}
+button{cursor:pointer;border:none;outline:none;font-family:inherit}
+.wrap{width:100%;max-width:460px}
+.banner{border-radius:10px;padding:8px 12px;margin-bottom:8px;font-size:11px;font-weight:700;text-align:center}
+.ban-open{background:rgba(0,229,160,.08);border:1px solid #00e5a030;color:#00e5a0}
+.ban-closed{background:rgba(80,80,80,.1);border:1px solid #33333350;color:#445566}
+.ban-news{background:rgba(255,80,0,.12);border:1px solid #ff500050;color:#ff6600;animation:pulse .8s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.logo{font-size:13px;font-weight:900;color:#00e5a0;letter-spacing:2px}
+.logo-sub{font-size:8px;color:#1a3550;margin-top:2px}
+.bal{font-size:18px;font-weight:900;color:#f0b429}
+.bal-l{font-size:7px;color:#1a3550;text-align:center}
+/* ASSETS */
+.cat-tabs{display:flex;gap:4px;margin-bottom:6px;overflow-x:auto;padding-bottom:2px}
+.cat-btn{padding:5px 12px;border-radius:16px;font-size:10px;font-weight:700;white-space:nowrap}
+.cat-btn.on{background:#7eb8f7;color:#030b14}
+.cat-btn.off{background:#0b1824;color:#1e4060}
+.assets{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px}
+.ab{padding:4px 9px;border-radius:14px;font-size:9px;font-weight:700}
+.ab.on{background:#00e5a0;color:#030b14}
+.ab.off{background:#0b1824;color:#1e4060}
+/* MTF STATUS */
+.mtf{display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;margin-bottom:7px}
+.tf-box{background:#070f1c;border-radius:9px;padding:7px;border:1px solid #0d1e2e;text-align:center}
+.tf-label{font-size:7px;color:#1a3550;margin-bottom:3px}
+.tf-trend{font-size:13px;font-weight:900}
+.tf-sub{font-size:8px;color:#334455;margin-top:1px}
+.tf-box.bull{border-color:#00e5a030;background:rgba(0,229,160,.04)}
+.tf-box.bear{border-color:#ff4d6d30;background:rgba(255,77,109,.04)}
+/* STRATEGY STATUS — Break & Retest steps */
+.strat{background:#070f1c;border-radius:12px;padding:10px 12px;margin-bottom:8px;border:1px solid #0d1e2e}
+.strat-title{font-size:8px;color:#1a3550;letter-spacing:1px;margin-bottom:8px}
+.steps{display:flex;flex-direction:column;gap:5px}
+.step{display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:8px;font-size:10px}
+.step.done{background:rgba(0,229,160,.08);border:1px solid #00e5a025;color:#00e5a0}
+.step.active{background:rgba(240,180,41,.1);border:1px solid #f0b42940;color:#f0b429;animation:glow .8s infinite}
+.step.wait{background:rgba(255,255,255,.02);border:1px solid #0d1e2e;color:#334455}
+@keyframes glow{0%,100%{opacity:1}50%{opacity:.6}}
+.step-num{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:900;flex-shrink:0}
+.step.done .step-num{background:#00e5a0;color:#030b14}
+.step.active .step-num{background:#f0b429;color:#030b14}
+.step.wait .step-num{background:#0d1e2e;color:#334455}
+/* LEVEL INFO */
+.level-info{background:#070f1c;border-radius:10px;padding:8px 12px;margin-bottom:8px;border:1px solid #0d1e2e;display:none}
+.level-title{font-size:8px;color:#1a3550;margin-bottom:5px}
+.level-row{display:flex;justify-content:space-between;font-size:10px;padding:3px 0;border-bottom:1px solid #0a1020}
+/* TICKER */
+.ticker{background:#070f1c;border-radius:9px;padding:6px 10px;margin-bottom:7px;border:1px solid #0d1e2e;display:none;flex-wrap:wrap;gap:7px;align-items:center}
+.tk{text-align:center;min-width:35px}
+.tkl{font-size:7px;color:#1a3550}
+.tkv{font-size:11px;font-weight:900}
+.sep{width:1px;height:20px;background:#0d1e2e;flex-shrink:0}
+.live-dot{display:inline-block;width:5px;height:5px;border-radius:50%;background:#00e5a0;margin-left:2px;animation:ld 1.2s infinite}
+@keyframes ld{0%,100%{opacity:1}50%{opacity:.2}}
+/* CHART */
+.chart-box{border-radius:10px;overflow:hidden;border:1px solid #0d1e2e;margin-bottom:8px}
+.chart-hdr{background:#060e18;padding:5px 8px;display:flex;gap:5px;font-size:7px;align-items:center;flex-wrap:wrap}
+.tf-switch{display:flex;gap:3px}
+.tfs-btn{padding:2px 7px;border-radius:5px;font-size:9px;font-weight:700}
+.tfs-btn.on{background:#7eb8f7;color:#030b14}
+.tfs-btn.off{background:#0a1828;color:#1e4060}
+canvas#cv{width:100%;height:200px;display:block;background:#030b14}
+/* SIGNAL */
+.sc{border-radius:16px;padding:14px;margin-bottom:8px;text-align:center}
+.sc-idle{background:#070f1c;border:2px solid #0d1e2e}
+.sc-loading{background:#070f1c;border:2px dashed #1a3550}
+.sc-step{background:#070f1c;border:2px dashed #1a3550}
+.sc-news{background:rgba(255,80,0,.07);border:2px solid #ff500035}
+.sc-closed{background:#050c14;border:2px solid #0d1e2e}
+.sc-call{background:linear-gradient(150deg,#001810,#000c08);border:3px solid #00e5a0;box-shadow:0 0 30px #00e5a015}
+.sc-put{background:linear-gradient(150deg,#1e0010,#0e0008);border:3px solid #ff4d6d;box-shadow:0 0 30px #ff4d6d15}
+.sc-atv-c{background:linear-gradient(150deg,#001810,#000c08);border:2px solid #00e5a035}
+.sc-atv-p{background:linear-gradient(150deg,#1e0010,#0e0008);border:2px solid #ff4d6d35}
+.scw{background:#ffffff06;border-radius:8px;padding:6px 10px;margin-bottom:6px}
+.sct{background:#030b14;border-radius:4px;height:9px;overflow:hidden;margin-top:3px}
+.scf{height:100%;border-radius:4px;transition:width .5s}
+.reas{background:#ffffff03;border-radius:8px;padding:6px 10px;text-align:right;margin-bottom:5px;max-height:120px;overflow-y:auto}
+.ri{font-size:9px;padding:2px 0;border-bottom:1px solid #080f18;line-height:1.5}
+/* SETTINGS */
+.sett{background:#070f1c;border-radius:12px;padding:8px 10px;margin-bottom:8px;border:1px solid #0d1e2e}
+.sl{font-size:7px;color:#1a3550;margin-bottom:4px}
+.br{display:flex;gap:4px}
+.db,.ab2{flex:1;padding:6px 0;border-radius:8px;font-size:11px;font-weight:900}
+.db.on,.ab2.on{background:#f0b429;color:#030b14}
+.db.off,.ab2.off{background:#050c14;color:#1e4060}
+.main-btns{display:flex;flex-direction:column;gap:7px;margin-bottom:8px}
+.start-btn{padding:11px;border-radius:11px;font-size:13px;font-weight:900;letter-spacing:1px;width:100%}
+.tr{display:flex;gap:7px}
+.cbtn,.pbtn{flex:1;padding:13px;border-radius:11px;font-size:19px;font-weight:900;letter-spacing:2px;transition:all .2s}
+.cbtn.on{background:linear-gradient(135deg,#00e5a0,#008850);color:#030b14;box-shadow:0 0 25px #00e5a035;border:3px solid #00e5a0;transform:scale(1.02)}
+.cbtn.off{background:#070f1c;color:#1a3550;border:2px solid #0d1e2e}
+.pbtn.on{background:linear-gradient(135deg,#ff4d6d,#cc1133);color:#fff;box-shadow:0 0 25px #ff4d6d35;border:3px solid #ff4d6d;transform:scale(1.02)}
+.pbtn.off{background:#070f1c;color:#1a3550;border:2px solid #0d1e2e}
+.prog-t{background:#050c14;border-radius:5px;height:7px;overflow:hidden;margin:5px 0}
+.prog-f{height:100%;border-radius:5px;transition:width .5s}
+.hist{background:#070f1c;border-radius:12px;padding:8px 10px;border:1px solid #0d1e2e;margin-bottom:8px;display:none}
+.hs{display:flex;justify-content:space-around;margin-bottom:6px;padding-bottom:5px;border-bottom:1px solid #050c14}
+.hsv{font-size:13px;font-weight:900;text-align:center}
+.hsl{font-size:7px;color:#1a3550;text-align:center}
+.hr{display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #050c14;font-size:9px;align-items:center}
+.disc{background:rgba(255,130,0,.04);border-radius:8px;padding:6px 10px;border:1px solid rgba(255,130,0,.08)}
+.disc p{font-size:8px;color:#ff990033;line-height:1.5}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="banner ban-closed" id="mainBanner">⏳ جاري فحص السوق...</div>
+<div class="hdr">
+  <div>
+    <div class="logo">◈ BREAK & RETEST</div>
+    <div class="logo-sub" id="stLbl">4H ترند + كسر + Retest + شمعة</div>
+  </div>
+  <div><div class="bal" id="balDsp">$1000.00</div><div class="bal-l">الرصيد</div></div>
+</div>
+<div class="cat-tabs" id="catTabs"></div>
+<div class="assets" id="assetBtns"></div>
+<!-- MTF -->
+<div class="mtf">
+  <div class="tf-box" id="tf4h"><div class="tf-label">📊 4H — ترند عام</div><div class="tf-trend" style="color:#334455">⟳</div><div class="tf-sub">—</div></div>
+  <div class="tf-box" id="tf1h"><div class="tf-label">📈 1H — تأكيد</div><div class="tf-trend" style="color:#334455">⟳</div><div class="tf-sub">—</div></div>
+  <div class="tf-box" id="tf5m"><div class="tf-label">⚡ 5M — دخول</div><div class="tf-trend" style="color:#334455">⟳</div><div class="tf-sub">—</div></div>
+</div>
+<!-- STRATEGY STEPS -->
+<div class="strat">
+  <div class="strat-title">🎯 خطوات Break & Retest</div>
+  <div class="steps">
+    <div class="step wait" id="step1">
+      <div class="step-num">1</div>
+      <div><b>ترند واضح</b> — 4H و 1H في نفس الاتجاه</div>
+    </div>
+    <div class="step wait" id="step2">
+      <div class="step-num">2</div>
+      <div><b>مستوى قوي</b> — دعم/مقاومة تم اختباره 2+ مرة</div>
+    </div>
+    <div class="step wait" id="step3">
+      <div class="step-num">3</div>
+      <div><b>كسر المستوى</b> — شمعة قوية تكسر بحجم عالٍ</div>
+    </div>
+    <div class="step wait" id="step4">
+      <div class="step-num">4</div>
+      <div><b>Retest</b> — السعر يرجع يختبر المنطقة المكسورة</div>
+    </div>
+    <div class="step wait" id="step5">
+      <div class="step-num">5</div>
+      <div><b>شمعة تأكيد</b> — Hammer أو Engulfing أو Doji عند المنطقة</div>
+    </div>
+  </div>
+</div>
+<!-- LEVEL INFO -->
+<div class="level-info" id="levelInfo">
+  <div class="level-title">🏗 المستوى المكسور</div>
+  <div id="levelRows"></div>
+</div>
+<!-- TICKER -->
+<div class="ticker" id="ticker">
+  <div class="tk"><div class="tkl">السعر<span class="live-dot"></span></div><div class="tkv" id="lpEl" style="color:#f0b429;font-size:14px">—</div></div>
+  <div class="sep"></div>
+  <div class="tk"><div class="tkl">4H</div><div class="tkv" id="t4El">—</div></div>
+  <div class="tk"><div class="tkl">1H</div><div class="tkv" id="t1El">—</div></div>
+  <div class="tk"><div class="tkl">نمط</div><div class="tkv" id="pEl" style="font-size:12px">—</div></div>
+  <div class="tk"><div class="tkl">الخطوة</div><div class="tkv" id="stpEl" style="color:#f0b429">—</div></div>
+</div>
+<!-- CHART -->
+<div class="chart-box">
+  <div class="chart-hdr">
+    <div class="tf-switch">
+      <button class="tfs-btn off" onclick="switchChart('4h')">4H</button>
+      <button class="tfs-btn off" onclick="switchChart('1h')">1H</button>
+      <button class="tfs-btn on"  onclick="switchChart('5m')">5M</button>
+    </div>
+    <span style="color:#f0b42988">━EMA8</span>
+    <span style="color:#7eb8f788">━EMA21</span>
+    <span style="color:#00e5a033">▬دعم</span>
+    <span style="color:#ff4d6d33">▬مقاومة</span>
+    <span style="color:#f0b42966">▬كسر</span>
+    <span id="ctEl" style="font-weight:900;margin-right:auto;color:#f0b429">—</span>
+  </div>
+  <canvas id="cv"></canvas>
+</div>
+<!-- SIGNAL -->
+<div id="sigCard" class="sc sc-idle">
+  <div style="font-size:34px;margin-bottom:5px">📡</div>
+  <div style="font-size:14px;font-weight:900;color:#1e4060">اضغط START</div>
+  <div style="font-size:9px;color:#1a3550;margin-top:4px">يبحث عن Break & Retest مثالي</div>
+</div>
+<!-- SETTINGS -->
+<div class="sett">
+  <div style="margin-bottom:7px"><div class="sl">⏱ مدة الصفقة</div>
+  <div class="br" id="durBtns">
+    <button class="db off" data-v="1">1 دق</button>
+    <button class="db off" data-v="3">3 دق</button>
+    <button class="db on"  data-v="5">5 دق</button>
+  </div></div>
+  <div><div class="sl">💵 المبلغ</div>
+  <div class="br" id="amtBtns">
+    <button class="ab2 off" data-v="5">$5</button>
+    <button class="ab2 on"  data-v="10">$10</button>
+    <button class="ab2 off" data-v="25">$25</button>
+    <button class="ab2 off" data-v="50">$50</button>
+    <button class="ab2 off" data-v="100">$100</button>
+  </div></div>
+  <div style="margin-top:7px"><div class="sl">🔔 تنبيه الإشارة</div>
+  <div class="br" id="alertBtns">
+    <button class="ab2 on"  data-v="1">🔊 صوت + اهتزاز</button>
+    <button class="ab2 off" data-v="0">🔇 صامت</button>
+  </div></div>
+</div>
+<div class="main-btns">
+  <button class="start-btn" id="startBtn" onclick="toggleStart()" style="background:#00e5a0;color:#030b14">📡 START — Break & Retest</button>
+  <div class="tr">
+    <button class="cbtn off" id="cBtn" onclick="place('CALL')">↑ CALL</button>
+    <button class="pbtn off" id="pBtn" onclick="place('PUT')">↓ PUT</button>
+  </div>
+</div>
+<div class="hist" id="histBox"><div class="hs" id="histStats"></div><div id="histRows"></div></div>
+<div class="disc"><p>⚠ إشارات للمساعدة فقط — طبّقها يدوياً على Pocket Option | التداول ينطوي على مخاطر</p></div>
+</div>
+<script>
+// ═══════════════ ASSETS (Deriv real symbols) ═══════════════
+// frx___ = real forex prices (matches real brokers / Pocket Option closely)
+// R_xx / BOOM/CRASH = Deriv synthetic indices (true 24/7, no broker mismatch)
+const CATS={
+  "فوركس حقيقي 💱":[
+    {id:"EUR/USD",sym:"frxEURUSD",pay:82,dec:5,type:"forex"},
+    {id:"GBP/USD",sym:"frxGBPUSD",pay:80,dec:5,type:"forex"},
+    {id:"USD/JPY",sym:"frxUSDJPY",pay:83,dec:3,type:"forex"},
+    {id:"AUD/USD",sym:"frxAUDUSD",pay:78,dec:5,type:"forex"},
+    {id:"USD/CAD",sym:"frxUSDCAD",pay:79,dec:5,type:"forex"},
+    {id:"USD/CHF",sym:"frxUSDCHF",pay:80,dec:5,type:"forex"},
+    {id:"NZD/USD",sym:"frxNZDUSD",pay:77,dec:5,type:"forex"},
+    {id:"GBP/JPY",sym:"frxGBPJPY",pay:81,dec:3,type:"forex"},
+    {id:"EUR/JPY",sym:"frxEURJPY",pay:82,dec:3,type:"forex"},
+    {id:"EUR/GBP",sym:"frxEURGBP",pay:76,dec:5,type:"forex"},
+  ],
+  "مؤشرات تركيبية 24/7 ₿":[
+    {id:"Volatility 10",sym:"R_10",pay:88,dec:3,type:"otc"},
+    {id:"Volatility 25",sym:"R_25",pay:87,dec:3,type:"otc"},
+    {id:"Volatility 50",sym:"R_50",pay:86,dec:4,type:"otc"},
+    {id:"Volatility 75",sym:"R_75",pay:85,dec:4,type:"otc"},
+    {id:"Volatility 100",sym:"R_100",pay:88,dec:2,type:"otc"},
+    {id:"Boom 1000",sym:"BOOM1000",pay:90,dec:2,type:"otc"},
+    {id:"Crash 1000",sym:"CRASH1000",pay:90,dec:2,type:"otc"},
+  ],
+};
+const AMAP={};
+Object.values(CATS).flat().forEach(a=>AMAP[a.id]=a);
+
+function getMkt(){
+  const now=new Date(),utc=now.getTime()+now.getTimezoneOffset()*60000;
+  const ast=new Date(utc+3*3600000);
+  const day=ast.getDay(),h=ast.getHours(),m=ast.getMinutes(),hm=h*60+m;
+  const forexOpen=!(day===6||(day===5&&hm>=23*60));
+  return{forexOpen,londonOpen:forexOpen&&hm>=11*60&&hm<20*60,nyOpen:forexOpen&&(hm>=16*60||hm<60),overlap:forexOpen&&hm>=16*60&&hm<20*60};
+}
+const NEWS=[{day:2,h:13,m:30,name:"CPI 🔴"},{day:3,h:13,m:30,name:"ADP 🔴"},{day:3,h:19,m:0,name:"FOMC 🔴"},{day:4,h:13,m:30,name:"البطالة 🔴"},{day:5,h:13,m:30,name:"NFP 🔴"}];
+function getNews(){
+  const now=new Date(),d=now.getUTCDay(),h=now.getUTCHours(),m=now.getUTCMinutes(),nm=h*60+m;
+  for(const ev of NEWS){if(ev.day!==d)continue;const em=ev.h*60+ev.m,diff=em-nm;if(diff>=-30&&diff<=15)return{blocked:true,name:ev.name};}
+  return{blocked:false};
+}
+
+// ═══════════════ INDICATORS ═══════════════
+const EMA=(p,n)=>{if(p.length<n)return p.map(()=>null);const k=2/(n+1);let v=p.slice(0,n).reduce((a,b)=>a+b)/n;return p.map((x,i)=>{if(i<n-1)return null;v=x*k+v*(1-k);return v;});};
+const RSI=(p,n=14)=>p.map((_,i)=>{if(i<n)return null;const s=p.slice(i-n,i+1);let g=0,l=0;for(let j=1;j<s.length;j++){const d=s[j]-s[j-1];d>0?g+=d:l-=d;}g/=n;l/=n;return l===0?100:100-100/(1+g/l);});
+const STOCH=(cs,n=14)=>{const r=cs.map((_,i)=>{if(i<n-1)return null;const s=cs.slice(i-n+1,i+1);const hi=Math.max(...s.map(c=>c.high)),lo=Math.min(...s.map(c=>c.low));return hi===lo?50:((cs[i].close-lo)/(hi-lo))*100;});return r.map((v,i)=>{if(!v||i<2)return null;const s=[r[i-2],r[i-1],r[i]].filter(x=>x!==null);return s.length===3?s.reduce((a,b)=>a+b)/3:null;});};
+
+// ═══════════════ ATR — Average True Range ═══════════════
+// Measures actual volatility/momentum strength in price units.
+// Used to: (1) classify market regime (quiet/trending/volatile),
+// (2) size the Risk:Reward target realistically instead of a fixed guess.
+function ATR(cs,n=14){
+  const tr=cs.map((c,i)=>{
+    if(i===0)return c.high-c.low;
+    const prevClose=cs[i-1].close;
+    return Math.max(c.high-c.low,Math.abs(c.high-prevClose),Math.abs(c.low-prevClose));
+  });
+  // Wilder's smoothing (same method real ATR uses)
+  const atr=[];let prev=null;
+  tr.forEach((v,i)=>{
+    if(i<n){atr.push(null);return;}
+    if(i===n){prev=tr.slice(1,n+1).reduce((a,b)=>a+b)/n;atr.push(prev);return;}
+    prev=(prev*(n-1)+v)/n;atr.push(prev);
+  });
+  return atr;
+}
+
+// Classify current market "personality" using ATR relative to its own recent average.
+// quiet     = current volatility well below normal → breakouts less reliable, expect false moves
+// trending  = volatility expanding with directional EMA alignment → ideal Break&Retest conditions
+// volatile  = volatility spiking abnormally → high risk of whipsaws, reduce confidence
+function marketRegime(cs,atrArr){
+  const n=cs.length-1;
+  const cur=atrArr[n];
+  if(!cur)return{regime:"unknown",atrPct:0,atrVal:0};
+  const lookback=atrArr.slice(Math.max(0,n-30),n).filter(x=>x!==null);
+  if(lookback.length<10)return{regime:"unknown",atrPct:0,atrVal:cur};
+  const avgATR=lookback.reduce((a,b)=>a+b)/lookback.length;
+  const ratio=cur/avgATR;
+  const price=cs[n].close;
+  const atrPct=(cur/price)*100;
+  let regime="trending";
+  if(ratio<0.7)regime="quiet";
+  else if(ratio>1.6)regime="volatile";
+  return{regime,ratio:+ratio.toFixed(2),atrPct:+atrPct.toFixed(3),atrVal:cur};
+}
+
+// ═══════════════ S&R DETECTION ═══════════════
+function findSR(cs,sw=8){
+  const rH=[],rL=[];
+  for(let i=sw;i<cs.length-sw;i++){
+    const s=cs.slice(i-sw,i+sw+1);
+    if(cs[i].high>=Math.max(...s.map(c=>c.high))*.9999)rH.push({p:cs[i].high,idx:i});
+    if(cs[i].low<=Math.min(...s.map(c=>c.low))*1.0001)rL.push({p:cs[i].low,idx:i});
+  }
+  const cl=arr=>{
+    const z=[];
+    arr.forEach(x=>{const f=z.find(o=>Math.abs(o.p-x.p)/x.p<.003);if(f){f.str++;f.p=(f.p*(f.str-1)+x.p)/f.str;f.lastIdx=Math.max(f.lastIdx||0,x.idx);}else z.push({p:x.p,str:1,lastIdx:x.idx});});
+    return z.filter(z=>z.str>=2).sort((a,b)=>b.str-a.str);
+  };
+  return{res:cl(rH).slice(0,8),sup:cl(rL).slice(0,8)};
+}
+
+// ═══════════════ BREAK & RETEST ENGINE ═══════════════
+function detectBreakout(cs,levels,dir){
+  // dir: "bull" = looking for broken resistance (now support)
+  //       "bear" = looking for broken support (now resistance)
+  const n=cs.length-1;
+  const price=cs[n].close;
+  const lookback=20; // candles to look back for breakout
+  const broken=[];
+
+  if(dir==="bull"){
+    // Look for resistance levels that were broken (price now above them)
+    levels.res.forEach(lvl=>{
+      if(lvl.p>price)return; // still above price, not broken yet
+      // Check if was resistance before breakout
+      const breakIdx=cs.findIndex((c,i)=>i>lvl.lastIdx&&c.close>lvl.p*1.001&&c.vol>0);
+      if(breakIdx===-1)return;
+      // Check breakout candle was strong (body > 60% of range)
+      const bc=cs[breakIdx];
+      const body=Math.abs(bc.close-bc.open),range=bc.high-bc.low;
+      if(range===0||body/range<0.4)return;
+      // Check price is now retesting (within 0.5% of level)
+      const distFromLevel=Math.abs(price-lvl.p)/lvl.p;
+      const isRetesting=distFromLevel<0.005;
+      broken.push({
+        price:lvl.p,str:lvl.str,
+        breakIdx,distFromLevel,isRetesting,
+        type:"resistance_broken"
+      });
+    });
+  } else {
+    // Bear: support broken, now retesting as resistance
+    levels.sup.forEach(lvl=>{
+      if(lvl.p<price)return;
+      const breakIdx=cs.findIndex((c,i)=>i>lvl.lastIdx&&c.close<lvl.p*.999&&c.vol>0);
+      if(breakIdx===-1)return;
+      const bc=cs[breakIdx];
+      const body=Math.abs(bc.close-bc.open),range=bc.high-bc.low;
+      if(range===0||body/range<0.4)return;
+      const distFromLevel=Math.abs(price-lvl.p)/lvl.p;
+      const isRetesting=distFromLevel<0.005;
+      broken.push({
+        price:lvl.p,str:lvl.str,
+        breakIdx,distFromLevel,isRetesting,
+        type:"support_broken"
+      });
+    });
+  }
+  return broken.sort((a,b)=>a.distFromLevel-b.distFromLevel);
+}
+
+// ═══════════════ CANDLE PATTERNS ═══════════════
+function detectPats(cs){
+  const n=cs.length-1;if(n<3)return[];
+  const c0=cs[n],c1=cs[n-1],c2=cs[n-2];
+  const body=c=>Math.abs(c.close-c.open),lW=c=>Math.min(c.open,c.close)-c.low,uW=c=>c.high-Math.max(c.open,c.close),rng=c=>c.high-c.low;
+  const bull=c=>c.close>c.open,bear=c=>c.close<c.open;
+  const out=[];
+  // Bullish
+  if(lW(c0)>=body(c0)*2.5&&uW(c0)<body(c0)*.5&&rng(c0)>0&&bear(c1))out.push({n:"🔨 Hammer",bull:true,w:3,d:"مطرقة عند الدعم"});
+  if(bear(c1)&&bull(c0)&&c0.open<=c1.close&&c0.close>=c1.open&&body(c0)>body(c1)*1.05)out.push({n:"🕯 Bull Engulf",bull:true,w:3.5,d:"ابتلاع صاعد"});
+  if(bear(c2)&&body(c1)<body(c2)*.35&&bull(c0)&&c0.close>(c2.open+c2.close)/2)out.push({n:"🌅 Morning Star",bull:true,w:4,d:"نجمة الصباح"});
+  if(lW(c0)>rng(c0)*.65&&body(c0)<rng(c0)*.2)out.push({n:"📌 Bull Pin Bar",bull:true,w:3,d:"Pin Bar صاعد"});
+  if(bull(c0)&&bull(c1)&&bull(c2)&&c0.close>c1.close)out.push({n:"⬆️ 3 Soldiers",bull:true,w:2.5,d:"3 جنود"});
+  // Bearish
+  if(uW(c0)>=body(c0)*2.5&&lW(c0)<body(c0)*.5&&rng(c0)>0&&bull(c1))out.push({n:"⭐ Shooting Star",bull:false,w:3,d:"نجمة ساقطة"});
+  if(bull(c1)&&bear(c0)&&c0.open>=c1.close&&c0.close<=c1.open&&body(c0)>body(c1)*1.05)out.push({n:"🕯 Bear Engulf",bull:false,w:3.5,d:"ابتلاع هابط"});
+  if(bull(c2)&&body(c1)<body(c2)*.35&&bear(c0)&&c0.close<(c2.open+c2.close)/2)out.push({n:"🌙 Evening Star",bull:false,w:4,d:"نجمة المساء"});
+  if(uW(c0)>rng(c0)*.65&&body(c0)<rng(c0)*.2)out.push({n:"📌 Bear Pin Bar",bull:false,w:3,d:"Pin Bar هابط"});
+  if(bear(c0)&&bear(c1)&&bear(c2)&&c0.close<c1.close)out.push({n:"⬇️ 3 Crows",bull:false,w:2.5,d:"3 غربان"});
+  // Neutral
+  if(body(c0)<rng(c0)*.1&&rng(c0)>0)out.push({n:"✚ Doji",bull:null,w:1,d:"دوجي — تردد"});
+  return out;
+}
+
+function analyzeTF(cs){
+  if(!cs||cs.length<30)return null;
+  const cl=cs.map(c=>c.close),n=cs.length-1;
+  const E8=EMA(cl,8)[n],E21=EMA(cl,21)[n],E50=EMA(cl,50)[n];
+  const R=RSI(cl,14)[n],S=STOCH(cs,14)[n];
+  const atrArr=ATR(cs,14),atr=atrArr[n];
+  if(!E8||!E21||!E50)return null;
+  return{tBull:E8>E21&&E21>E50,tBear:E8<E21&&E21<E50,rsi:R?.toFixed(1),stoch:S?.toFixed(1),e8:E8,e21:E21,e50:E50,price:cl[n],atr,atrArr};
+}
+
+// ═══════════════ MAIN BREAK & RETEST ANALYSIS ═══════════════
+function analyze(c4h,c1h,c5m){
+  if(!c4h||!c1h||!c5m||c4h.length<30)return null;
+  const a4=analyzeTF(c4h),a1=analyzeTF(c1h),a5=analyzeTF(c5m);
+  if(!a4||!a1||!a5)return null;
+
+  const price=a5.price;
+  const pats5m=detectPats(c5m);
+  const sr4h=findSR(c4h,8);
+  const sr1h=findSR(c1h,6);
+  const sr5m=findSR(c5m,5);
+
+  // STEP 1: Trend alignment
+  const trendBull=a4.tBull&&(a1.tBull||a1.e8>a1.e21);
+  const trendBear=a4.tBear&&(a1.tBear||a1.e8<a1.e21);
+  const step1=trendBull||trendBear;
+
+  // STEP 2: Strong level exists (2+ touches on 4H or 1H)
+  const allLevels={res:[...sr4h.res,...sr1h.res,...sr5m.res],sup:[...sr4h.sup,...sr1h.sup,...sr5m.sup]};
+  const strongRes=allLevels.res.filter(r=>r.str>=2&&r.p>price).sort((a,b)=>a.p-b.p)[0];
+  const strongSup=allLevels.sup.filter(s=>s.str>=2&&s.p<price).sort((a,b)=>b.p-a.p)[0];
+  const step2=!!(strongRes||strongSup);
+
+  // STEP 3 & 4: Breakout + Retest detection
+  let breakouts=[];
+  if(trendBull) breakouts=detectBreakout(c1h,sr1h,"bull").concat(detectBreakout(c5m,sr5m,"bull"));
+  if(trendBear) breakouts=detectBreakout(c1h,sr1h,"bear").concat(detectBreakout(c5m,sr5m,"bear"));
+  const bestBreak=breakouts[0];
+  const step3=breakouts.length>0;
+  const step4=bestBreak?.isRetesting===true;
+
+  // STEP 5: Confirmation candle at level
+  const bullPats=pats5m.filter(p=>p.bull===true);
+  const bearPats=pats5m.filter(p=>p.bull===false);
+  const neutralPat=pats5m.find(p=>p.bull===null);
+  const confirmBull=bullPats.length>0;
+  const confirmBear=bearPats.length>0;
+  const step5=(trendBull&&confirmBull)||(trendBear&&confirmBear)||!!neutralPat;
+
+  // ── SCORING ──
+  let cS=0,pS=0;const cR=[],pR=[];
+
+  // Step 1: Trend (3 pts)
+  if(trendBull){cS+=3;cR.push("📊 4H+1H: ترند صاعد متوافق");}
+  if(trendBear){pS+=3;pR.push("📊 4H+1H: ترند هابط متوافق");}
+
+  // Step 2: Strong level (2 pts)
+  if(strongSup&&trendBull){cS+=2;cR.push(`🏗 دعم قوي @ ${strongSup.p.toFixed(4)} (${strongSup.str} لمسة)`);}
+  if(strongRes&&trendBear){pS+=2;pR.push(`🏗 مقاومة قوية @ ${strongRes.p.toFixed(4)} (${strongRes.str} لمسة)`);}
+
+  // Step 3: Breakout (2 pts)
+  if(step3&&trendBull){cS+=2;cR.push("💥 كسر مستوى مقاومة — تحول لدعم");}
+  if(step3&&trendBear){pS+=2;pR.push("💥 كسر مستوى دعم — تحول لمقاومة");}
+
+  // Step 4: Retest (2 pts — CRITICAL)
+  if(step4&&trendBull){cS+=2;cR.push("🔄 Retest — السعر اختبر المنطقة المكسورة");}
+  if(step4&&trendBear){pS+=2;pR.push("🔄 Retest — السعر اختبر المنطقة المكسورة");}
+
+  // Step 5: Confirmation candle (up to 4 pts)
+  if(trendBull&&bullPats.length){const p=bullPats[0];cS+=p.w;cR.push(`${p.n} — ${p.d}`);}
+  if(trendBear&&bearPats.length){const p=bearPats[0];pS+=p.w;pR.push(`${p.n} — ${p.d}`);}
+  if(neutralPat&&step4){
+    if(trendBull)cS+=1;
+    if(trendBear)pS+=1;
+    (trendBull?cR:pR).push(`${neutralPat.n} — ${neutralPat.d}`);
+  }
+
+  // RSI confirmation
+  if(parseFloat(a5.rsi)<40&&trendBull){cS+=1;cR.push(`✅ RSI ${a5.rsi} — منطقة شراء`);}
+  if(parseFloat(a5.rsi)>60&&trendBear){pS+=1;pR.push(`✅ RSI ${a5.rsi} — منطقة بيع`);}
+
+  // ── MARKET REGIME (ATR-based) ──
+  // Classifies current "personality" of the 5M market: quiet / trending / volatile.
+  // A Break&Retest signal is most reliable in a "trending" regime — quiet markets produce
+  // false breakouts, and abnormally volatile markets produce whipsaws that blow past levels.
+  const regime5m=marketRegime(c5m,a5.atrArr);
+  if(regime5m.regime==="trending"){
+    cS+=1;pS+=1;
+    (trendBull?cR:pR).push(`📐 السوق في وضع ترند صحي (ATR ${regime5m.ratio}× المعدل)`);
+  } else if(regime5m.regime==="quiet"){
+    cS-=2;pS-=2; // quiet market = breakouts are statistically less reliable, penalize
+  } else if(regime5m.regime==="volatile"){
+    cS-=1;pS-=1; // abnormal volatility = higher whipsaw risk, small penalty
+  }
+
+  // ── RISK:REWARD CALCULATION (ATR-based) ──
+  // Stop distance = distance from current price to the broken level (where the trade idea fails).
+  // Target distance = 1.5x the 5M ATR (a realistic expected move size for the chosen timeframe),
+  // capped so it never claims an unrealistic reward versus the actual recent volatility.
+  let riskReward=null;
+  if(bestBreak&&a5.atr){
+    const stopDist=Math.abs(price-bestBreak.price);
+    const targetDist=a5.atr*1.5;
+    if(stopDist>0){
+      const rr=targetDist/stopDist;
+      riskReward={
+        stopDist:+stopDist.toFixed(6),
+        targetDist:+targetDist.toFixed(6),
+        ratio:+rr.toFixed(2),
+        quality:rr>=2?"excellent":rr>=1.2?"good":"poor"
+      };
+    }
+  }
+
+  // ── DECISION ──
+  // STRICT MODE: only fire when ALL 5 Break&Retest steps are genuinely complete —
+  // (1) clear 4H+1H trend, (2) a proven strong S/R level, (3) a real breakout candle,
+  // (4) price has actually returned to retest that level, (5) a reversal candle
+  // (Hammer/Engulfing/Doji/Pin Bar) confirms right at the retest zone.
+  // The previous "good but incomplete" shortcut (4/5 steps + high score) has been
+  // removed entirely — that was producing a signal every ~5 minutes regardless of
+  // whether the setup was truly finished. Now the bot only speaks when the full
+  // textbook setup is in place, exactly as requested: fewer signals, much higher quality.
+  const regimeOk=regime5m.regime!=="quiet";
+  const rrOk=!riskReward||riskReward.ratio>=1.2; // require a genuinely favorable reward, not just break-even
+  const allStepsBull=step1&&step2&&step3&&step4&&step5&&confirmBull&&trendBull&&regimeOk&&rrOk;
+  const allStepsBear=step1&&step2&&step3&&step4&&step5&&confirmBear&&trendBear&&regimeOk&&rrOk;
+
+  let dir="WAIT",score=0,reasons=[],conf=0,waitMsg="";
+  const currentStep=!step1?1:!step2?2:!step3?3:!step4?4:!step5?5:5;
+
+  if(allStepsBull&&cS>=9&&cS>pS+2){dir="CALL";score=+cS.toFixed(1);reasons=cR;conf=Math.min(99,Math.round(80+(score/13)*19));}
+  else if(allStepsBear&&pS>=9&&pS>cS+2){dir="PUT";score=+pS.toFixed(1);reasons=pR;conf=Math.min(99,Math.round(80+(score/13)*19));}
+  else{
+    if(!regimeOk)waitMsg="⏳ السوق هادئ جداً الآن (تذبذب ضعيف) — الاختراقات غير موثوقة، ننتظر نشاط أعلى";
+    else if(step1&&step2&&step3&&step4&&step5&&riskReward&&riskReward.ratio<1.2)waitMsg="⏳ الإعداد مكتمل لكن نسبة المخاطرة/المكسب ضعيفة — ننتظر فرصة أفضل";
+    else{
+      const msgs=["","⏳ الخطوة 1: انتظر ترند واضح في 4H و 1H","⏳ الخطوة 2: انتظر مستوى دعم/مقاومة قوي (2+ لمسة)","⏳ الخطوة 3: انتظر كسر المستوى بشمعة قوية","⏳ الخطوة 4: انتظر Retest — السعر يرجع للمنطقة","⏳ الخطوة 5: انتظر شمعة تأكيد (Hammer/Engulfing/Doji) عند منطقة الانعكاس"];
+      waitMsg=msgs[currentStep]||"⏳ انتظر اكتمال الخطوات الخمس بالضبط";
+    }
+  }
+
+  // Apply confidence adjustment for regime (trending market = bonus, volatile = penalty)
+  if(dir!=="WAIT"){
+    if(regime5m.regime==="trending")conf=Math.min(99,conf+3);
+    if(regime5m.regime==="volatile")conf=Math.max(60,conf-5);
+  }
+
+  return{dir,score,conf,reasons,waitMsg,cS:+cS.toFixed(1),pS:+pS.toFixed(1),
+    step1,step2,step3,step4,step5,currentStep,
+    trendBull,trendBear,
+    a4,a1,a5,
+    bestBreak,strongSup,strongRes,
+    regime:regime5m,riskReward,
+    topPat:bullPats[0]||bearPats[0]||neutralPat||null,
+    sr:{res:[...sr4h.res.slice(0,3),...sr5m.res.slice(0,2)],sup:[...sr4h.sup.slice(0,3),...sr5m.sup.slice(0,2)]},
+    price:price.toFixed(AMAP[G.asset]?.dec||5)};
+}
+
+// ═══════════════ CHART ═══════════════
+let chartTF="5m";
+function switchChart(tf){
+  chartTF=tf;
+  document.querySelectorAll(".tfs-btn").forEach(b=>{b.className="tfs-btn "+(b.textContent===tf.toUpperCase()?"on":"off");});
+  drawChart();
+}
+function drawChart(){
+  const cv=document.getElementById("cv");if(!cv)return;
+  const dpr=window.devicePixelRatio||1;
+  cv.width=cv.offsetWidth*dpr;cv.height=200*dpr;cv.style.height="200px";
+  const ctx=cv.getContext("2d");
+  const W=cv.width,H=cv.height,RP=56*dpr,BP=16*dpr,TP=5*dpr;
+  const cA=W-RP,hA=H-BP-TP;
+  const cs=chartTF==="4h"?G.c4h:chartTF==="1h"?G.c1h:G.c5m;
+  if(!cs||!cs.length){ctx.fillStyle="#030b14";ctx.fillRect(0,0,W,H);return;}
+  const sl=cs.slice(-50);
+  const px=sl.flatMap(c=>[c.high,c.low]);
+  let mn=Math.min(...px),mx=Math.max(...px);
+  const pd=(mx-mn)*.1;mn-=pd;mx+=pd;
+  const toY=p=>TP+hA-((p-mn)/(mx-mn))*hA;
+  const cW=cA/sl.length,toX=i=>i*cW+cW/2;
+  const a=G.lastA;
+  ctx.clearRect(0,0,W,H);ctx.fillStyle="#030b14";ctx.fillRect(0,0,W,H);
+  const dec=AMAP[G.asset]?.dec||5;
+
+  for(let i=0;i<=4;i++){
+    const y=TP+(hA/4)*i,p=mx-(mx-mn)*(i/4);
+    ctx.strokeStyle="rgba(255,255,255,0.025)";ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(cA,y);ctx.stroke();
+    ctx.fillStyle="#1a3550";ctx.font=`${6*dpr}px monospace`;
+    ctx.fillText(p.toFixed(Math.min(dec,4)),cA+2,y+2*dpr);
+  }
+
+  // Draw S&R levels
+  const srD=a?.sr;
+  srD?.sup.slice(0,5).forEach(s=>{
+    const y=toY(s.p);if(y<TP||y>TP+hA)return;
+    ctx.fillStyle=`rgba(0,229,160,${Math.min(.08,.03*s.str)})`;ctx.fillRect(0,y-3,cA,6);
+    ctx.strokeStyle=`rgba(0,229,160,${.15+s.str*.06})`;ctx.lineWidth=s.str>=3?1.5:1;
+    ctx.setLineDash(s.str>=3?[]:[3,4]);ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(cA,y);ctx.stroke();ctx.setLineDash([]);
+    ctx.fillStyle="#00e5a044";ctx.font=`${5.5*dpr}px monospace`;ctx.fillText(`S${s.str}`,2,y-1);
+  });
+  srD?.res.slice(0,5).forEach(r=>{
+    const y=toY(r.p);if(y<TP||y>TP+hA)return;
+    ctx.fillStyle=`rgba(255,77,109,${Math.min(.08,.03*r.str)})`;ctx.fillRect(0,y-3,cA,6);
+    ctx.strokeStyle=`rgba(255,77,109,${.15+r.str*.06})`;ctx.lineWidth=r.str>=3?1.5:1;
+    ctx.setLineDash(r.str>=3?[]:[3,4]);ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(cA,y);ctx.stroke();ctx.setLineDash([]);
+    ctx.fillStyle="#ff4d6d44";ctx.font=`${5.5*dpr}px monospace`;ctx.fillText(`R${r.str}`,2,y-1);
+  });
+
+  // Highlight broken level (Break & Retest zone)
+  if(a?.bestBreak){
+    const y=toY(a.bestBreak.price);
+    ctx.fillStyle="rgba(240,180,41,0.12)";ctx.fillRect(0,y-6,cA,12);
+    ctx.strokeStyle="#f0b42988";ctx.lineWidth=2;
+    ctx.setLineDash([]);ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(cA,y);ctx.stroke();
+    ctx.fillStyle="#f0b429";ctx.font=`bold ${6*dpr}px monospace`;ctx.fillText("BRK",2,y-2);
+  }
+
+  // EMAs
+  const cl=sl.map(c=>c.close);
+  [[EMA(cl,8),"#f0b42977",1.3],[EMA(cl,21),"#7eb8f766",1.1],[EMA(cl,50),"#9d7ef744",.9]].forEach(([arr,col,lw])=>{
+    ctx.strokeStyle=col;ctx.lineWidth=lw*dpr;ctx.beginPath();let st=false;
+    arr.forEach((v,i)=>{if(!v)return;st?ctx.lineTo(toX(i),toY(v)):(ctx.moveTo(toX(i),toY(v)),st=true);});ctx.stroke();
+  });
+
+  // Volume
+  // Note: Deriv forex/synthetic feeds don't expose real volume, so volume bars are omitted
+
+  // Candles
+  sl.forEach((c,i)=>{
+    const x=toX(i),bl=c.close>=c.open,col=bl?"#00e5a0":"#ff4d6d";
+    ctx.strokeStyle=col+"aa";ctx.lineWidth=dpr;
+    ctx.beginPath();ctx.moveTo(x,toY(c.high));ctx.lineTo(x,toY(c.low));ctx.stroke();
+    const y1=toY(Math.max(c.open,c.close)),bH=Math.max(1.5*dpr,Math.abs(toY(c.open)-toY(c.close)));
+    ctx.fillStyle=bl?"#00e5a0bb":"#ff4d6dbb";ctx.fillRect(x-cW*.38,y1,cW*.76,bH);
+  });
+
+  // Price tag
+  const last=sl[sl.length-1],py=toY(last.close);
+  const dc=G.locked?.dir==="CALL"?"#00e5a0":G.locked?.dir==="PUT"?"#ff4d6d":"#f0b429";
+  ctx.fillStyle=dc;ctx.fillRect(cA,py-7*dpr,RP,14*dpr);
+  ctx.fillStyle="#030b14";ctx.font=`bold ${6*dpr}px monospace`;ctx.textAlign="center";
+  ctx.fillText(last.close.toFixed(Math.min(dec,4)),cA+RP/2,py+2*dpr);ctx.textAlign="left";
+}
+
+// ═══════════════ STATE ═══════════════
+const G={asset:"EUR/USD",bal:1000,amt:10,dur:5,status:"idle",c4h:[],c1h:[],c5m:[],liveP:null,locked:null,next:null,active:null,hist:[],lastA:null,alertSoundOn:true};
+let fTmr=null,cntTmr=null,rTmr=null,curCat="فوركس حقيقي 💱";
+
+// ═══════════════ SIGNAL ALERT SYSTEM ═══════════════
+// Fires on every NEWLY locked signal so the user never misses one, even with the
+// phone screen off, the tab in the background, or attention elsewhere.
+// Four independent channels are used because no single one is reliable on its own:
+// (1) sound — works even if user isn't looking at the screen
+// (2) vibration — works on mobile even with sound muted
+// (3) document title flashing — catches attention if they're on another browser tab
+// (4) native browser notification — can surface even if the browser is minimized (requires permission)
+let audioCtx=null;
+function ensureAudioCtx(){
+  if(!audioCtx){
+    try{audioCtx=new (window.AudioContext||window.webkitAudioContext)();}catch(e){}
+  }
+  return audioCtx;
+}
+function playAlertBeep(){
+  if(!G.alertSoundOn)return;
+  const ctx=ensureAudioCtx();
+  if(!ctx)return;
+  // Three rising beeps — distinct and hard to miss, but not jarring
+  [0,0.25,0.5].forEach((delay,i)=>{
+    const osc=ctx.createOscillator();
+    const gain=ctx.createGain();
+    osc.type="sine";
+    osc.frequency.value=880+i*220; // rising pitch each beep
+    gain.gain.setValueAtTime(0.0001,ctx.currentTime+delay);
+    gain.gain.exponentialRampToValueAtTime(0.35,ctx.currentTime+delay+0.02);
+    gain.gain.exponentialRampToValueAtTime(0.0001,ctx.currentTime+delay+0.22);
+    osc.connect(gain);gain.connect(ctx.destination);
+    osc.start(ctx.currentTime+delay);
+    osc.stop(ctx.currentTime+delay+0.25);
+  });
+}
+function vibrateAlert(){
+  if(navigator.vibrate)navigator.vibrate([200,100,200,100,400]);
+}
+let titleFlashTmr=null,originalTitle=document.title;
+function flashTitle(text){
+  clearInterval(titleFlashTmr);
+  let on=false;
+  titleFlashTmr=setInterval(()=>{
+    document.title=on?originalTitle:text;
+    on=!on;
+  },900);
+  // Stop flashing once the tab regains focus
+  const stop=()=>{clearInterval(titleFlashTmr);document.title=originalTitle;document.removeEventListener("visibilitychange",stop);};
+  document.addEventListener("visibilitychange",()=>{if(!document.hidden)stop();});
+}
+async function requestNotifyPermission(){
+  if(!("Notification" in window))return;
+  if(Notification.permission==="default"){
+    try{await Notification.requestPermission();}catch(e){}
+  }
+}
+function sendBrowserNotification(dir,asset,conf){
+  if(!("Notification" in window)||Notification.permission!=="granted")return;
+  try{
+    new Notification(dir==="CALL"?"🟢 إشارة CALL قوية":"🔴 إشارة PUT قوية",{
+      body:`${asset} — ثقة ${conf}% — Break & Retest مكتمل`,
+      tag:"trade-signal",
+      requireInteraction:true
+    });
+  }catch(e){}
+}
+function fireSignalAlert(a){
+  if(!a||a.dir==="WAIT")return;
+  playAlertBeep();
+  vibrateAlert();
+  flashTitle(a.dir==="CALL"?"🟢 CALL إشارة جديدة!":"🔴 PUT إشارة جديدة!");
+  sendBrowserNotification(a.dir,G.asset,a.conf);
+}
+
+// ═══════════════ DERIV WEBSOCKET ═══════════════
+const DERIV_WS_URL="wss://ws.derivws.com/websockets/v3?app_id=1089";
+let derivWS=null,derivReqId=1;
+const pendingReqs={};
+
+function connectDeriv(){
+  return new Promise((resolve,reject)=>{
+    derivWS=new WebSocket(DERIV_WS_URL);
+    derivWS.onopen=()=>resolve(derivWS);
+    derivWS.onerror=(e)=>reject(e);
+    derivWS.onmessage=(msg)=>{
+      const data=JSON.parse(msg.data);
+      // Handle tick stream updates — update price/chart live, but DO NOT re-run signal analysis here.
+      // Analysis only runs on candle close (see candle-close watcher below) so a locked signal
+      // doesn't flicker or change its entry time every second.
+      if(data.msg_type==="tick"&&data.tick){
+        G.liveP=data.tick.quote;
+        if(G.c5m.length>0){
+          const c=[...G.c5m],l={...c[c.length-1]};
+          l.close=data.tick.quote;l.high=Math.max(l.high,data.tick.quote);l.low=Math.min(l.low,data.tick.quote);
+          c[c.length-1]=l;G.c5m=c;
+        }
+        render();
+      }
+      // Handle responses to requests (history, etc.)
+      if(data.req_id&&pendingReqs[data.req_id]){
+        pendingReqs[data.req_id](data);
+        delete pendingReqs[data.req_id];
+      }
+    };
+    derivWS.onclose=()=>{if(G.status==="live")setTimeout(()=>connectDeriv().catch(()=>{}),3000);};
+  });
+}
+
+// ═══════════════ CANDLE-CLOSE WATCHER ═══════════════
+// Runs the full 5-step Break&Retest analysis ONLY when a new 5-minute candle starts.
+// This is what keeps a signal "locked" — it won't change mid-candle just because price ticked.
+let lastCandleBoundary=0;
+function checkCandleClose(){
+  if(G.status!=="live")return;
+  const candleMs=5*60*1000;
+  const boundary=Math.floor(Date.now()/candleMs)*candleMs;
+  if(boundary===lastCandleBoundary)return; // same candle, nothing to do
+  lastCandleBoundary=boundary;
+  // New candle started — re-run analysis fresh
+  const a=analyze(G.c4h,G.c1h,G.c5m);
+  G.lastA=a;
+  if(!G.active&&a&&a.dir!=="WAIT"){
+    // Only treat this as a NEW signal (and reset the locked entry time) if the
+    // direction actually changed (WAIT→CALL, WAIT→PUT, or CALL↔PUT flip).
+    // If the previous signal was already CALL and this candle confirms CALL again,
+    // that's the SAME trade idea continuing — the entry time must stay frozen,
+    // otherwise it keeps sliding forward every 5 minutes (the bug being fixed here).
+    const isNewDirection=!G.locked||G.locked.dir!==a.dir;
+    G.locked=a;G.next=null;
+    if(isNewDirection){
+      lockedEntryBoundary=null;
+      fireSignalAlert(a); // 🔔 new signal just appeared — alert the user across all channels
+    }
+  }else if(G.active&&a&&a.dir!=="WAIT"){
+    G.next=a;
+  }
+  render();
+}
+setInterval(checkCandleClose,1000);
+
+function derivRequest(req){
+  return new Promise((resolve,reject)=>{
+    if(!derivWS||derivWS.readyState!==1){reject("not connected");return;}
+    const id=derivReqId++;
+    req.req_id=id;
+    pendingReqs[id]=(data)=>{
+      if(data.error)reject(data.error);
+      else resolve(data);
+    };
+    derivWS.send(JSON.stringify(req));
+    setTimeout(()=>{if(pendingReqs[id]){delete pendingReqs[id];reject("timeout");}},10000);
+  });
+}
+
+// Granularity in seconds: 4h=14400, 1h=3600, 5m=300
+async function fetchCandles(sym,granularity,count){
+  const data=await derivRequest({
+    ticks_history:sym,
+    end:"latest",
+    count,
+    style:"candles",
+    granularity
+  });
+  if(!data.candles)return[];
+  return data.candles.map(c=>({
+    time:c.epoch*1000,
+    open:+c.open,high:+c.high,low:+c.low,close:+c.close,
+    vol:1 // synthetic indices/forex from Deriv don't expose volume; use flat value
+  }));
+}
+
+async function fetchAll(sym){
+  const[c4h,c1h,c5m]=await Promise.all([
+    fetchCandles(sym,14400,120),
+    fetchCandles(sym,3600,120),
+    fetchCandles(sym,300,150)
+  ]);
+  return{c4h,c1h,c5m};
+}
+
+function startPolling(sym){
+  // Subscribe to live tick stream (push-based, not polling — more accurate)
+  derivRequest({ticks:sym,subscribe:1}).catch(()=>{});
+}
+
+function stopDerivStream(sym){
+  derivRequest({forget_all:"ticks"}).catch(()=>{});
+}
+
+// ═══════════════ TRADE ═══════════════
+function place(dir){
+  const mkt=getMkt(),news=getNews(),cfg=AMAP[G.asset];
+  const isOpen=cfg.type==="forex"?mkt.forexOpen:true;
+  if(G.status!=="live"||G.active||G.bal<G.amt)return;
+  if(G.locked?.dir!==dir)return;
+  if(cfg.type==="forex"&&!isOpen){alert("⛔ السوق مغلق!");return;}
+  if(cfg.type!=="otc"&&news.blocked){alert(`⛔ خبر: ${news.name}`);return;}
+  const last=G.c5m[G.c5m.length-1];
+  G.active={dir,entry:last.close,amt:G.amt,dur:G.dur*60,pay:cfg.pay,asset:G.asset,end:Date.now()+G.dur*60*1000};
+  G.bal=+(G.bal-G.amt).toFixed(2);G.locked=null;G.next=null;lockedEntryBoundary=null;
+  startCnt();render();
+}
+function startCnt(){
+  clearInterval(cntTmr);
+  cntTmr=setInterval(()=>{
+    if(!G.active){clearInterval(cntTmr);return;}
+    const left=Math.max(0,Math.round((G.active.end-Date.now())/1000));
+    if(left<=0){
+      clearInterval(cntTmr);
+      const last=G.c5m[G.c5m.length-1];
+      const won=G.active.dir==="CALL"?last.close>G.active.entry:last.close<G.active.entry;
+      const profit=won?+(G.active.amt*G.active.pay/100).toFixed(2):-G.active.amt;
+      G.hist=[{...G.active,won,profit,t:new Date().toLocaleTimeString("ar")},...G.hist].slice(0,15);
+      if(won)G.bal=+(G.bal+G.active.amt+profit).toFixed(2);
+      G.active=null;if(G.next){G.locked=G.next;G.next=null;}
+    }
+    render();
+  },500);
+}
+
+// ═══════════════ RENDER ═══════════════
+function render(){
+  const mkt=getMkt(),news=getNews(),cfg=AMAP[G.asset];
+  if(!cfg)return;
+  const isOpen=cfg.type==="forex"?mkt.forexOpen:true;
+  const{locked:sig,active,lastA:a,liveP,hist,status}=G;
+  const isC=sig?.dir==="CALL",isP=sig?.dir==="PUT",sc=isC?"#00e5a0":isP?"#ff4d6d":"#1e4060";
+
+  // BANNER
+  const ban=document.getElementById("mainBanner");
+  if(news.blocked&&cfg.type!=="otc"){ban.className="banner ban-news";ban.textContent=`🚫 خبر: ${news.name} — لا تتداول`;}
+  else if(cfg.type==="forex"&&!isOpen){ban.className="banner ban-closed";ban.textContent="🔒 الفوركس مغلق — أفضل وقت: 11ص لندن أو 4م نيويورك";}
+  else if(cfg.type==="otc"){ban.className="banner ban-open";ban.textContent="📊 مؤشر تركيبي — بيانات حقيقية من Deriv 24/7";}
+  else if(mkt.overlap){ban.className="banner ban-open";ban.textContent="🌟 أفضل وقت — تداخل لندن + نيويورك";}
+  else if(mkt.londonOpen||mkt.nyOpen){ban.className="banner ban-open";ban.textContent=`✅ ${mkt.londonOpen?"جلسة لندن 🇬🇧":"جلسة نيويورك 🇺🇸"} — سوق نشط`;}
+  else if(cfg.type==="crypto"){ban.className="banner ban-open";ban.textContent="₿ الكريبتو مفتوح 24/7";}
+  else{ban.className="banner ban-closed";ban.textContent="⏳ سوق هادئ — انتظر جلسة لندن أو نيويورك";}
+
+  document.getElementById("balDsp").textContent="$"+G.bal.toLocaleString("en",{minimumFractionDigits:2});
+  const stl=document.getElementById("stLbl");
+  if(status==="live")stl.innerHTML='<span style="color:#00e5a0">● Break & Retest — Deriv حقيقي</span>';
+  else if(status==="loading")stl.innerHTML='<span style="color:#f0b429">⟳ تحميل 4H+1H+5M...</span>';
+  else if(status==="error")stl.innerHTML='<span style="color:#ff4d6d">✕ فشل الاتصال</span>';
+  else stl.textContent="4H ترند + كسر + Retest + شمعة";
+
+  // MTF BOXES
+  const utfb=(id,data,lbl)=>{
+    const el=document.getElementById(id);if(!el)return;
+    if(!data){el.className="tf-box";el.innerHTML=`<div class="tf-label">${lbl}</div><div class="tf-trend" style="color:#334455">⟳</div><div class="tf-sub">—</div>`;return;}
+    const col=data.tBull?"#00e5a0":data.tBear?"#ff4d6d":"#f0b429";
+    el.className="tf-box"+(data.tBull?" bull":data.tBear?" bear":" flat");
+    el.innerHTML=`<div class="tf-label">${lbl}</div><div class="tf-trend" style="color:${col}">${data.tBull?"↑صاعد":data.tBear?"↓هابط":"↔جانبي"}</div><div class="tf-sub" style="color:${parseFloat(data.rsi)<35?"#00e5a0":parseFloat(data.rsi)>65?"#ff4d6d":"#445566"}">RSI ${data.rsi||"—"}</div>`;
+  };
+  utfb("tf4h",a?.a4,"📊 4H — ترند عام");utfb("tf1h",a?.a1,"📈 1H — تأكيد");utfb("tf5m",a?.a5,"⚡ 5M — دخول");
+
+  // STRATEGY STEPS
+  if(a){
+    const stepStates=[a.step1,a.step2,a.step3,a.step4,a.step5];
+    for(let i=1;i<=5;i++){
+      const el=document.getElementById(`step${i}`);if(!el)continue;
+      const done=stepStates[i-1];
+      const isActive=!done&&(i===1||(stepStates[i-2]));
+      el.className=`step ${done?"done":isActive?"active":"wait"}`;
+    }
+  }
+
+  // LEVEL INFO
+  const li=document.getElementById("levelInfo");
+  if(a?.bestBreak){
+    li.style.display="block";
+    document.getElementById("levelRows").innerHTML=`
+      <div class="level-row"><span style="color:#1e4060">المستوى المكسور</span><span style="color:#f0b429;font-weight:700">${a.bestBreak.price.toFixed(AMAP[G.asset]?.dec||5)}</span></div>
+      <div class="level-row"><span style="color:#1e4060">النوع</span><span style="color:${a.trendBull?"#00e5a0":"#ff4d6d"}">${a.bestBreak.type==="resistance_broken"?"مقاومة → دعم":"دعم → مقاومة"}</span></div>
+      <div class="level-row"><span style="color:#1e4060">Retest</span><span style="color:${a.bestBreak.isRetesting?"#00e5a0":"#f0b429"}">${a.bestBreak.isRetesting?"✅ يختبر الآن":"⏳ ينتظر الرجوع"}</span></div>`;
+  }else li.style.display="none";
+
+  // TICKER
+  const tk=document.getElementById("ticker");tk.style.display=status==="live"?"flex":"none";
+  if(status==="live"&&liveP){
+    document.getElementById("lpEl").textContent=liveP.toFixed(cfg.dec);
+    const t4=document.getElementById("t4El");t4.textContent=a?.a4?.tBull?"↑":a?.a4?.tBear?"↓":"↔";t4.style.color=a?.a4?.tBull?"#00e5a0":a?.a4?.tBear?"#ff4d6d":"#f0b429";
+    const t1=document.getElementById("t1El");t1.textContent=a?.a1?.tBull?"↑":a?.a1?.tBear?"↓":"↔";t1.style.color=a?.a1?.tBull?"#00e5a0":a?.a1?.tBear?"#ff4d6d":"#f0b429";
+    document.getElementById("pEl").textContent=a?.topPat?.n?.split(" ").slice(0,2).join(" ")||"—";
+    document.getElementById("stpEl").textContent=`${a?.currentStep||1}/5`;
+  }
+
+  // CHART
+  const ct=document.getElementById("ctEl");
+  const curD=chartTF==="4h"?a?.a4:chartTF==="1h"?a?.a1:a?.a5;
+  ct.textContent=(chartTF.toUpperCase()+": ")+(curD?.tBull?"↑صاعد":curD?.tBear?"↓هابط":"↔جانبي");
+  ct.style.color=curD?.tBull?"#00e5a0":curD?.tBear?"#ff4d6d":"#f0b429";
+  drawChart();
+
+  // SIGNAL CARD
+  const card=document.getElementById("sigCard");
+  if(cfg.type==="forex"&&!isOpen&&!active){
+    card.className="sc sc-closed";
+    card.innerHTML=`<div style="font-size:32px;margin-bottom:4px">🔒</div><div style="font-size:13px;font-weight:900;color:#334455">الفوركس مغلق</div>`;
+    document.getElementById("cBtn").className="cbtn off";document.getElementById("pBtn").className="pbtn off";
+    updateSB();return;
+  }
+  if(news.blocked&&cfg.type!=="otc"&&status==="live"&&!active){
+    card.className="sc sc-news";
+    card.innerHTML=`<div style="font-size:30px;margin-bottom:4px">🚫</div><div style="font-size:13px;font-weight:900;color:#ff6600">خبر قوي — لا تتداول</div><div style="font-size:10px;color:#ff880055;margin-top:3px">${news.name}</div>`;
+    document.getElementById("cBtn").className="cbtn off";document.getElementById("pBtn").className="pbtn off";
+    updateSB();return;
+  }
+  if(active){
+    const left=Math.max(0,Math.round((active.end-Date.now())/1000));
+    const mm=String(Math.floor(left/60)).padStart(2,"0"),ss=String(left%60).padStart(2,"0");
+    const dc=active.dir==="CALL"?"#00e5a0":"#ff4d6d";
+    const pnl=liveP?`<div style="font-size:10px;font-weight:700;color:${(active.dir==="CALL"?liveP>active.entry:liveP<active.entry)?"#00e5a0":"#ff4d6d"};margin-top:3px">${(active.dir==="CALL"?liveP>active.entry:liveP<active.entry)?"✅ رابح":"❌ خاسر"} — ${liveP.toFixed(cfg.dec)}</div>`:"";
+    card.className="sc sc-atv-"+(active.dir==="CALL"?"c":"p");
+    card.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px"><div style="font-size:12px;font-weight:900;color:${dc}">${active.dir==="CALL"?"↑ CALL":"↓ PUT"} — شغالة</div><div style="font-size:28px;font-weight:900;color:#f0b429;font-family:monospace">${mm}:${ss}</div></div><div class="prog-t"><div class="prog-f" style="width:${(left/active.dur)*100}%;background:linear-gradient(90deg,${active.dir==="CALL"?"#002818,#00e5a0":"#280010,#ff4d6d"})"></div></div><div style="display:flex;gap:10px;font-size:9px;color:#1e4060"><span>دخول:<b style="color:#7eb8f7"> ${active.entry.toFixed(cfg.dec)}</b></span><span>مبلغ:<b style="color:#7eb8f7"> $${active.amt}</b></span><span>عائد:<b style="color:#00e5a0"> +$${(active.amt*active.pay/100).toFixed(2)}</b></span></div>${pnl}`;
+  }else if(status==="idle"){
+    card.className="sc sc-idle";
+    card.innerHTML=`<div style="font-size:32px;margin-bottom:4px">📡</div><div style="font-size:14px;font-weight:900;color:#1e4060">اضغط START</div><div style="font-size:9px;color:#1a3550;margin-top:4px">يبحث عن Break & Retest مثالي</div>`;
+  }else if(status==="loading"){
+    card.className="sc sc-loading";
+    card.innerHTML=`<div style="font-size:30px;margin-bottom:4px">⟳</div><div style="font-size:13px;font-weight:900;color:#f0b429">تحميل 4H+1H+5M...</div>`;
+  }else if(status==="error"){
+    card.className="sc sc-idle";
+    card.innerHTML=`<div style="font-size:30px;margin-bottom:4px">⚠️</div><div style="font-size:12px;font-weight:900;color:#ff4d6d">فشل الاتصال</div><button onclick="retryLoad()" style="margin-top:7px;padding:5px 14px;border-radius:7px;background:#ff4d6d;color:#fff;font-weight:700">إعادة المحاولة</button>`;
+  }else if(!sig){
+    card.className="sc sc-step";
+    const reg=a?.regime;
+    const regCol=reg?.regime==="trending"?"#00e5a0":reg?.regime==="quiet"?"#445566":reg?.regime==="volatile"?"#ff9944":"#1a3550";
+    const regTxt=reg?.regime==="trending"?"📐 سوق نشط":reg?.regime==="quiet"?"😴 سوق هادئ — حركة ضعيفة":reg?.regime==="volatile"?"⚡ تقلب مرتفع":"⟳ يحسب...";
+    card.innerHTML=`
+      <div style="font-size:26px;margin-bottom:4px">🔍</div>
+      <div style="font-size:13px;font-weight:900;color:#1e4060">ينتظر الإعداد المثالي...</div>
+      <div style="font-size:9px;color:#1a3550;margin-top:4px;line-height:1.7">${a?.waitMsg||"ينتظر اكتمال 5 خطوات Break & Retest"}</div>
+      <div style="display:inline-block;margin-top:6px;padding:3px 10px;border-radius:10px;background:${regCol}10;border:1px solid ${regCol}30;font-size:9px;font-weight:700;color:${regCol}">${regTxt}</div>
+      <div style="margin-top:6px;font-size:10px;color:#f0b429">الخطوة ${a?.currentStep||1} من 5</div>
+      <div style="background:#030b14;border-radius:6px;height:6px;margin-top:5px;overflow:hidden">
+        <div style="height:100%;width:${((a?.currentStep||0)/5)*100}%;background:linear-gradient(90deg,#334455,#f0b429);border-radius:6px;transition:width .5s"></div>
+      </div>`;
+  }else{
+    const sCol=sig.score>=10?"#00e5a0":sig.score>=8?"#f0b429":"#ff9944";
+    card.className="sc sc-"+(isC?"call":"put");
+    card.innerHTML=`
+      <div style="display:inline-block;padding:3px 13px;border-radius:14px;margin-bottom:4px;background:${sc}15;border:1px solid ${sc}40;font-size:11px;font-weight:900;color:${sc}">🎯 ثقة ${sig.conf}% — Break & Retest</div>
+      <div style="font-size:40px;font-weight:900;color:${sc};text-shadow:0 0 30px ${sc};line-height:1;margin-bottom:3px">${isC?"↑ CALL":"↓ PUT"}</div>
+      <div style="font-size:9px;font-weight:700;color:${isC?"#008850":"#bb1133"};margin-bottom:5px">🔒 5 خطوات مكتملة | ${isC?"اضغط CALL":"اضغط PUT"}</div>
+      <div style="font-size:8px;color:#1a3550;margin-bottom:5px">✓ الإشارة مقفلة — لن تتغير حتى إغلاق الشمعة الحالية</div>
+      <div style="background:#000c08;border-radius:10px;padding:10px 12px;margin-bottom:7px;border:1px solid ${isC?"#00e5a030":"#ff4d6d30"}">
+        <div style="font-size:8px;color:#1a3550;margin-bottom:6px;text-align:center">⏰ توقيت الصفقة الدقيق</div>
+        <div style="display:flex;justify-content:space-around;align-items:center;margin-bottom:6px">
+          <div style="text-align:center">
+            <div style="font-size:8px;color:#445566">وقت الدخول</div>
+            <div id="entryClock" style="font-size:18px;font-weight:900;color:${isC?"#00e5a0":"#ff4d6d"};font-family:monospace">--:--:--</div>
+          </div>
+          <div style="font-size:16px;color:#334455">←</div>
+          <div style="text-align:center">
+            <div style="font-size:8px;color:#445566">وقت الانتهاء</div>
+            <div id="exitClock" style="font-size:18px;font-weight:900;color:#7eb8f7;font-family:monospace">--:--:--</div>
+          </div>
+        </div>
+        <div style="text-align:center;margin-bottom:5px">
+          <span style="font-size:9px;color:#445566">المدة: </span>
+          <span style="font-size:11px;font-weight:900;color:#f0b429">${G.dur} دقيقة</span>
+        </div>
+        <div style="background:#030b14;border-radius:4px;height:5px;overflow:hidden;margin-bottom:5px">
+          <div id="candleProgress" style="height:100%;background:linear-gradient(90deg,#334455,#f0b429);border-radius:4px;transition:width .5s;width:0%"></div>
+        </div>
+        <div id="entryStatus" style="font-size:10px;font-weight:700;text-align:center;color:#7eb8f7">يحسب التوقيت...</div>
+      </div>
+      <div class="scw">
+        <div style="display:flex;justify-content:space-between;font-size:9px">
+          <span style="color:#1e4060">قوة الإشارة</span>
+          <span style="color:${sCol};font-weight:900">${sig.score}/10</span>
+        </div>
+        <div class="sct"><div class="scf" style="width:${(sig.score/10)*100}%;background:linear-gradient(90deg,${isC?"#002818,#00e5a0":"#480015,#ff4d6d"})"></div></div>
+      </div>
+      ${(()=>{
+        const reg=sig.regime;
+        const regCol=reg?.regime==="trending"?"#00e5a0":reg?.regime==="quiet"?"#445566":"#ff9944";
+        const regTxt=reg?.regime==="trending"?"📐 سوق نشط — ظروف مثالية":reg?.regime==="quiet"?"😴 سوق هادئ":reg?.regime==="volatile"?"⚡ تقلب مرتفع — احذر":"—";
+        const rr=sig.riskReward;
+        const rrCol=rr?.quality==="excellent"?"#00e5a0":rr?.quality==="good"?"#f0b429":"#ff4d6d";
+        const rrTxt=rr?`R:R ${rr.ratio}×`:"—";
+        return `<div style="display:flex;gap:5px;margin-bottom:7px">
+          <div style="flex:1;background:${regCol}10;border:1px solid ${regCol}30;border-radius:7px;padding:5px 7px;text-align:center">
+            <div style="font-size:7px;color:#1a3550">حالة السوق (ATR)</div>
+            <div style="font-size:10px;font-weight:900;color:${regCol}">${regTxt}</div>
+          </div>
+          <div style="flex:1;background:${rrCol}10;border:1px solid ${rrCol}30;border-radius:7px;padding:5px 7px;text-align:center">
+            <div style="font-size:7px;color:#1a3550">نسبة مخاطرة/مكسب</div>
+            <div style="font-size:10px;font-weight:900;color:${rrCol}">${rrTxt}</div>
+          </div>
+        </div>`;
+      })()}
+      <div class="reas">${sig.reasons.map(r=>`<div class="ri" style="color:${isC?"#008850":"#bb2244"}">${r}</div>`).join("")}</div>`;
+  }
+
+  // Update candle timer
+  if(sig&&!active){
+    updateCandleTimer();
+  }
+  const canTrade=status==="live"&&!active&&isOpen&&!(news.blocked&&cfg.type!=="otc");
+  document.getElementById("cBtn").className="cbtn"+(canTrade&&sig?.dir==="CALL"?" on":" off");
+  document.getElementById("pBtn").className="pbtn"+(canTrade&&sig?.dir==="PUT"?" on":" off");
+  updateSB();
+
+  // HISTORY
+  const hb=document.getElementById("histBox");
+  if(hist.length>0){
+    hb.style.display="block";
+    const wins=hist.filter(h=>h.won).length,pnl=hist.reduce((s,h)=>s+h.profit,0).toFixed(2);
+    const wr=hist.length?((wins/hist.length)*100).toFixed(0):"-";
+    document.getElementById("histStats").innerHTML=[{l:"صفقات",v:hist.length,c:"#7eb8f7"},{l:"فوز✅",v:wins,c:"#00e5a0"},{l:"خسارة",v:hist.length-wins,c:"#ff4d6d"},{l:"Win%",v:wr+"%",c:parseFloat(wr)>=65?"#00e5a0":"#ff4d6d"},{l:"PnL",v:(parseFloat(pnl)>=0?"+":"")+"$"+pnl,c:parseFloat(pnl)>=0?"#00e5a0":"#ff4d6d"}].map(({l,v,c})=>`<div><div class="hsv" style="color:${c}">${v}</div><div class="hsl">${l}</div></div>`).join("");
+    document.getElementById("histRows").innerHTML=hist.slice(0,6).map(h=>`<div class="hr"><span style="color:${h.dir==="CALL"?"#00e5a0":"#ff4d6d"};font-weight:900">${h.dir==="CALL"?"↑":"↓"} ${h.dir}</span><span style="color:#1e4060;font-size:8px">${h.asset}</span><span style="color:#1a3550;font-size:7px">${h.dur/60}د</span><span style="color:${h.won?"#00e5a0":"#ff4d6d"};font-weight:900">${h.won?"+$"+h.profit:"-$"+h.amt}</span><span style="color:#1a3550;font-size:7px">${h.t}</span></div>`).join("");
+  }else hb.style.display="none";
+}
+
+function fmtClock(d){
+  return String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0")+":"+String(d.getSeconds()).padStart(2,"0");
+}
+
+// Stores the entry boundary that was calculated the moment a signal first locked,
+// so the displayed time never jumps forward just because a second passed.
+// Previously this was recalculated fresh every call, so the instant the wall clock
+// crossed the target boundary (e.g. 7:00:00 → 7:00:00.2) it would compute the NEXT
+// boundary (7:05) instead of staying on 7:00 — which is the bug being fixed here.
+let lockedEntryBoundary=null;
+
+function updateCandleTimer(){
+  const now=new Date();
+  const nowMs=now.getTime();
+  const candleMs=5*60*1000;
+
+  // Calculate which boundary we're targeting only ONCE per signal — when a new signal
+  // locks, lockedEntryBoundary is reset to null (see render()'s signal-lock branch),
+  // so we compute it fresh exactly one time and then keep reusing the same value.
+  if(lockedEntryBoundary===null){
+    const msIntoCandle=nowMs%candleMs;
+    const msToNext=candleMs-msIntoCandle;
+    lockedEntryBoundary=nowMs+msToNext;
+    // Snap to a clean boundary (zero out seconds/ms remainder from the candle grid)
+    lockedEntryBoundary=Math.round(lockedEntryBoundary/1000)*1000;
+  }
+
+  const entryTime=new Date(lockedEntryBoundary);
+  const exitTime=new Date(lockedEntryBoundary+G.dur*60*1000);
+  const remainingMs=lockedEntryBoundary-nowMs;
+  const remainingSec=Math.max(0,Math.ceil(remainingMs/1000));
+  const totalWindow=candleMs;
+  const elapsed=totalWindow-remainingMs;
+  const pct=Math.min(100,Math.max(0,(elapsed/totalWindow)*100));
+
+  const ec=document.getElementById("entryClock");
+  const xc=document.getElementById("exitClock");
+  const cp=document.getElementById("candleProgress");
+  const es=document.getElementById("entryStatus");
+
+  if(ec)ec.textContent=fmtClock(entryTime);
+  if(xc)xc.textContent=fmtClock(exitTime);
+  if(cp)cp.style.width=pct+"%";
+  if(es){
+    if(remainingSec<=0){
+      es.textContent="🚀 ادخل الآن! الشمعة الجديدة بدأت";
+      es.style.color="#00e5a0";
+      es.style.animation="pulse .5s infinite";
+    } else if(remainingSec<=20){
+      es.textContent=`⚡ استعد! باقي ${remainingSec} ثانية`;
+      es.style.color="#f0b429";
+      es.style.animation="pulse .8s infinite";
+    } else {
+      es.textContent=`⏳ انتظر ${remainingSec} ثانية لبداية الشمعة`;
+      es.style.color="#7eb8f7";
+      es.style.animation="none";
+    }
+  }
+}
+
+// Run candle timer every second
+setInterval(()=>{
+  if(G.locked&&!G.active&&G.status==="live")updateCandleTimer();
+},1000);
+
+function updateSB(){
+  const sb=document.getElementById("startBtn");
+  if(G.status==="live"){sb.style.cssText="background:#0a1520;color:#7eb8f7;box-shadow:none;border:2px solid #1a355040;width:100%;padding:11px;border-radius:11px;font-size:13px;font-weight:900;letter-spacing:1px";sb.textContent="■ إيقاف البوت";}
+  else if(G.status==="loading"){sb.style.cssText="background:#0a1520;color:#f0b429;box-shadow:none;border:2px solid #f0b42920;width:100%;padding:11px;border-radius:11px;font-size:13px;font-weight:900;letter-spacing:1px";sb.textContent="⟳ جاري التحميل...";}
+  else{sb.style.cssText="background:#00e5a0;color:#030b14;box-shadow:0 0 18px #00e5a025;border:none;width:100%;padding:11px;border-radius:11px;font-size:13px;font-weight:900;letter-spacing:1px";sb.textContent="📡 START — Break & Retest";}
+}
+
+async function toggleStart(){
+  if(G.status==="live"){
+    G.status="idle";
+    const cfg=AMAP[G.asset];
+    if(cfg)stopDerivStream(cfg.sym);
+    if(derivWS)try{derivWS.close();}catch(e){}
+    clearInterval(fTmr);clearInterval(rTmr);
+    G.c4h=[];G.c1h=[];G.c5m=[];G.locked=null;G.liveP=null;G.lastA=null;lockedEntryBoundary=null;render();return;
+  }
+  if(G.status==="loading")return;
+  // Unlock/resume the AudioContext here — this click is a real user gesture, which
+  // mobile browsers require before allowing ANY sound to play. Without this, the
+  // automatic alert beep fired later by checkCandleClose() would be silently blocked.
+  const ctx=ensureAudioCtx();
+  if(ctx&&ctx.state==="suspended"){try{await ctx.resume();}catch(e){}}
+  retryLoad();
+}
+async function retryLoad(){
+  G.status="loading";render();
+  try{
+    const cfg=AMAP[G.asset];
+    if(!derivWS||derivWS.readyState!==1){
+      await connectDeriv();
+    }
+    const{c4h,c1h,c5m}=await fetchAll(cfg.sym);
+    G.c4h=c4h;G.c1h=c1h;G.c5m=c5m;
+    const initialA=analyze(c4h,c1h,c5m);
+    G.lastA=initialA;G.status="live";
+    G.locked=(initialA&&initialA.dir!=="WAIT")?initialA:null;
+    G.next=null;
+    if(G.locked)fireSignalAlert(G.locked); // signal already present right when bot starts — alert immediately
+    requestNotifyPermission(); // ask once, harmless if already granted/denied
+    const candleMs=5*60*1000;
+    lastCandleBoundary=Math.floor(Date.now()/candleMs)*candleMs;
+    startPolling(cfg.sym); // subscribes to live tick stream (push, not polling)
+    clearInterval(fTmr);
+    fTmr=setInterval(async()=>{
+      try{
+        const c5m=await fetchCandles(cfg.sym,300,150);G.c5m=c5m;
+        const now=new Date();
+        if(now.getMinutes()<2){G.c1h=await fetchCandles(cfg.sym,3600,120);}
+        if(now.getMinutes()<2&&now.getHours()%4===0){G.c4h=await fetchCandles(cfg.sym,14400,120);}
+      }catch(e){}
+    },5*60*1000);
+    clearInterval(rTmr);rTmr=setInterval(render,30000);
+    render();
+  }catch(e){G.status="error";render();}
+}
+
+// ═══════════════ INIT ═══════════════
+const catEl=document.getElementById("catTabs");
+Object.keys(CATS).forEach(cat=>{
+  const b=document.createElement("button");
+  b.className="cat-btn"+(cat===curCat?" on":" off");
+  b.textContent=cat;
+  b.onclick=()=>{curCat=cat;document.querySelectorAll(".cat-btn").forEach(x=>x.className="cat-btn off");b.className="cat-btn on";buildAssets();};
+  catEl.appendChild(b);
+});
+function buildAssets(){
+  const ab=document.getElementById("assetBtns");ab.innerHTML="";
+  CATS[curCat].forEach(a=>{
+    const b=document.createElement("button");
+    b.className="ab"+(a.id===G.asset?" on":" off");
+    b.textContent=a.id;
+    b.onclick=()=>{
+      G.asset=a.id;
+      document.querySelectorAll(".ab").forEach(x=>x.className="ab off");b.className="ab on";
+      if(G.status==="live"){
+        const oldCfg=AMAP[G.asset];
+        if(oldCfg)stopDerivStream(oldCfg.sym);
+        G.c4h=[];G.c1h=[];G.c5m=[];G.locked=null;G.liveP=null;G.lastA=null;lockedEntryBoundary=null;retryLoad();
+      }
+      else render();
+    };
+    ab.appendChild(b);
+  });
+}
+buildAssets();
+document.getElementById("durBtns").querySelectorAll(".db").forEach(b=>{b.onclick=()=>{G.dur=parseInt(b.dataset.v);document.querySelectorAll(".db").forEach(x=>x.className="db off");b.className="db on";};});
+document.getElementById("amtBtns").querySelectorAll(".ab2").forEach(b=>{b.onclick=()=>{G.amt=parseInt(b.dataset.v);document.getElementById("amtBtns").querySelectorAll(".ab2").forEach(x=>x.className="ab2 off");b.className="ab2 on";};});
+document.getElementById("alertBtns").querySelectorAll(".ab2").forEach(b=>{
+  b.onclick=()=>{
+    G.alertSoundOn=b.dataset.v==="1";
+    document.getElementById("alertBtns").querySelectorAll(".ab2").forEach(x=>x.className="ab2 off");
+    b.className="ab2 on";
+    // Play a quick confirmation beep so the user can hear the sound channel actually works
+    // (also primes/unlocks the AudioContext on mobile browsers, which require a user gesture first)
+    if(G.alertSoundOn)playAlertBeep();
+  };
+});
+window.addEventListener("resize",drawChart);
+render();
+</script>
+</body>
+</html>
